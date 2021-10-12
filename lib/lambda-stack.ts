@@ -17,16 +17,26 @@ export class LambdaStack extends cdk.Stack {
       handler: 'hello.handler'                // file is "hello", function is "handler"
     });
     // defines an API Gateway REST API resource backed by our "hello" function.
-    new apigw.LambdaRestApi(this, 'Endpoint', {
+    const myApiGw=new apigw.LambdaRestApi(this, 'Endpoint', {
       handler: hello
     });
     //CloudFront distribution
-    // new cloudfront.Distribution(this, 'myDist', {
-    //   defaultBehavior: { origin: new origins.HttpOrigin('https://15rb80ghsc.execute-api.ap-southeast-2.amazonaws.com/prod/') },
-    // });
+    const myDistribution=new cloudfront.Distribution(this, 'myDistribution', {
+      defaultBehavior: { origin: new origins.HttpOrigin(`${myApiGw.restApiId}.execute-api.${this.region}.${this.urlSuffix}`),
+      //.....    
+    },
+    //myDistribution.addBehavior('/prod', new origins.HttpOrigin('15rb80ghsc.execute-api.ap-southeast-2.amazonaws.com'))
+      
+      
+    });
     // new CloudFrontToApiGateway(this, 'cdn',{
-
-
     // })
+      // const myCUstomDistribution=new cloudfront.Distribution(this, 'myCloudFront',{
+      //   defaultBehavior: {
+      //     // origin: new origins.HttpOrigin('https://e2pm0uo42m.execute-api.ap-southeast-2.amazonaws.com/prod/'), '
+      //     origin: new origins.HttpOrigin('https://e2pm0uo42m.execute-api.ap-southeast-2.amazonaws.com/prod/') 
+      //   } 
+      // });
+    // myCUstomDistribution.addBehavior()
   }
 }
