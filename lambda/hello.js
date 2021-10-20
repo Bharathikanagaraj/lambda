@@ -3,6 +3,6 @@ exports.handler = async function(event) {
     return {
       statusCode: 200,
       headers: { "Content-Type": "text/plain" },
-      body: `Bharathi's CloudFront hello ${event.path}\n`
+      body: `Bharathi's CloudFront hello \n`
     };
   };
