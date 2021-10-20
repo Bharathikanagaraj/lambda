@@ -8,6 +8,9 @@ import * as s3 from '@aws-cdk/aws-s3';
 import { LogGroup } from "@aws-cdk/aws-logs";
 //import path =  require('path');
 import * as alias from '@aws-cdk/aws-route53-targets'
+
+
+
 export class LambdaStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -26,8 +29,8 @@ export class LambdaStack extends cdk.Stack {
       role: myLamdaRole,
       handler: 'default.handler',
       code: lambda.Code.fromAsset('lambda'),
-      //code: lambda.Code.fromAsset(path.join(__dirname,'../lambda/')),
-      timeout: cdk.Duration.seconds(300)
+      timeout: cdk.Duration.seconds(300),
+      
     })
 
     const helloLambda = new lambda.Function(this, 'helloLambda', {
@@ -96,8 +99,8 @@ export class LambdaStack extends cdk.Stack {
         names: [siteDomain],
       },
       loggingConfig: {
-        bucket: new s3.Bucket(this, 'logbucket20102021', {
-          bucketName: "logbucket20102021",
+        bucket: new s3.Bucket(this, 'logbucket20102021-1', {
+          bucketName: "logbucket20102021-1",
           lifecycleRules: [
               {
                 enabled: true,
@@ -152,12 +155,12 @@ export class LambdaStack extends cdk.Stack {
     });
     new cdk.CfnOutput(this, "distributionDomainName", { value: distribution.distributionDomainName });
     //Route53
-    const zone = route53.HostedZone.fromHostedZoneAttributes(this, 'ZenithWebFoundryZone', {
+    const myzone = route53.HostedZone.fromHostedZoneAttributes(this, 'ZenithWebFoundryZone', {
       hostedZoneId: 'Z07501213VM01SYPJYZ77',
       zoneName: 'bharatitypescriptdevops.com' // your zone name here
     });
     new route53.ARecord(this, 'AliasRecord', {
-      zone,
+      zone:myzone,
       target: route53.RecordTarget.fromAlias(new alias.CloudFrontTarget(distribution)),
     });
      
