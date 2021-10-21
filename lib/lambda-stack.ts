@@ -8,7 +8,8 @@ import * as s3 from '@aws-cdk/aws-s3';
 import { LogGroup } from "@aws-cdk/aws-logs";
 //import path =  require('path');
 import * as alias from '@aws-cdk/aws-route53-targets'
-
+import * as wafv2 from '@aws-cdk/aws-wafv2';
+import { CfnWebACL } from '@aws-cdk/aws-wafv2';
 
 
 export class LambdaStack extends cdk.Stack {
@@ -89,8 +90,32 @@ export class LambdaStack extends cdk.Stack {
       "POST",
       new apigw.LambdaIntegration(worldLambda)
     )
-
-
+    
+    //waf
+    const wafRules:Array<wafv2.CfnWebACL.RuleProperty>  = [];
+    const myip= new wafv2.CfnIPSet(this,"myip",{
+      addresses:["172.65.56.9"],
+      ipAddressVersion: "IPV4",
+      scope: "REGIONAL"
+    })
+    const ipmatch:wafv2.CfnWebACL.RuleProperty={
+      name: 'ipmatchrule',
+      priority: 1,
+      overrideAction: { none: {} },
+      statement: {
+        ipSetReferenceStatement:{
+          
+        }
+      },
+      visibilityConfig: {
+        cloudWatchMetricsEnabled: true,
+        metricName : 'ipmatchrule',
+        sampledRequestsEnabled: true
+      }
+    }
+    wafRules.push(ipmatch);
+    // const mywebacl=new CfnWebACL(this, "mywebacl", {
+    // })
     const siteDomain = "bharatitypescriptdevops.com"
     const distribution = new cf.CloudFrontWebDistribution(this, "webDistribution", {
       aliasConfiguration: {
@@ -98,6 +123,9 @@ export class LambdaStack extends cdk.Stack {
         securityPolicy: cf.SecurityPolicyProtocol.TLS_V1_2_2018,
         names: [siteDomain],
       },
+      //.....................................
+      webACLId: "mywebacl",
+      //.....................................
       loggingConfig: {
         bucket: new s3.Bucket(this, 'logbucket20102021-1', {
           bucketName: "logbucket20102021-1",
@@ -163,6 +191,7 @@ export class LambdaStack extends cdk.Stack {
       zone:myzone,
       target: route53.RecordTarget.fromAlias(new alias.CloudFrontTarget(distribution)),
     });
-     
+    //waf&shield
+
   }
 }
